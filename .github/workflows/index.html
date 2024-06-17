@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>求导游戏</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        let score = 0;
+        let a, b, c;
+        let randomX;
+
+        function getRandomNumber(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function displayFunction(a, b, c) {
+            let functionStr = "";
+            if (a !== 1) {
+                functionStr += a + "x^2";
+            } else {
+                functionStr += "x^2";
+            }
+
+            if (b !== 0) {
+                if (b === 1) {
+                    functionStr += " + x";
+                } else if (b === -1) {
+                    functionStr += " - x";
+                } else if (b > 0) {
+                    functionStr += " + " + b + "x";
+                } else {
+                    functionStr += " - " + (-b) + "x";
+                }
+            }
+
+            if (c !== 0) {
+                if (c > 0) {
+                    functionStr += " + " + c;
+                } else {
+                    functionStr += " - " + (-c);
+                }
+            }
+
+            return functionStr;
+        }
+
+        function displayDerivative(a, b) {
+            let da = 2 * a;
+            let db = b;
+            let derivativeStr = "";
+
+            if (da !== 1) {
+                derivativeStr += da + "x";
+            } else {
+                derivativeStr += "x";
+            }
+
+            if (db !== 0) {
+                if (db > 0) {
+                    derivativeStr += " + " + db;
+                } else {
+                    derivativeStr += " - " + (-db);
+                }
+            }
+
+            return derivativeStr;
+        }
+
+        function calculateDerivativeAtPoint(a, b, x) {
+            return 2 * a * x + b;
+        }
+
+        function updateScore(delta) {
+            score += delta;
+            document.getElementById('score').innerText = `分数: ${score}`;
+            if (score >= 10) {
+                alert('恭喜你，获得胜利！');
+                resetGame();
+            } else if (score <= -10) {
+                alert('很遗憾，你失败了。');
+                resetGame();
+            }
+        }
+
+        function resetGame() {
+            score = 0;
+            document.getElementById('score').innerText = `分数: ${score}`;
+            startGame();
+        }
+
+        function startGame() {
+            a = getRandomNumber(1, 9);
+            b = getRandomNumber(1, 9);
+            c = getRandomNumber(-9, 9);
+
+            const functionStr = displayFunction(a, b, c);
+            document.getElementById('function').innerHTML = `f(x) = \\(${functionStr}\\)`;
+
+            document.getElementById('correctDerivative').style.display = 'none';
+            document.getElementById('valueSection').style.display = 'none';
+            document.getElementById('userDerivative').value = '';
+            document.getElementById('userResult').value = '';
+
+            MathJax.typeset();
+        }
+
+        window.onload = function() {
+            document.getElementById('score').innerText = `分数: ${score}`;
+            startGame();
+        }
+
+        function checkDerivative() {
+            const correctDerivative = displayDerivative(a, b);
+            const userDerivative = document.getElementById('userDerivative').value.replace(/\s+/g, '');
+            const formattedCorrectDerivative = correctDerivative.replace(/\s+/g, '');
+            if (userDerivative === formattedCorrectDerivative) {
+                document.getElementById('correctDerivative').style.display = 'block';
+                document.getElementById('correctDerivative').innerHTML = `正确答案是：\\(${correctDerivative}\\)`;
+                document.getElementById('valueSection').style.display = 'block';
+                generateRandomX();
+                MathJax.typeset();
+            } else {
+                alert('导数计算错误，请重试！');
+                updateScore(-1);
+                startGame(); // 重新生成新题目
+            }
+        }
+
+        function checkValue() {
+            const userResult = parseInt(document.getElementById('userResult').value, 10);
+            const correctResult = calculateDerivativeAtPoint(a, b, randomX);
+
+            if (userResult === correctResult) {
+                alert('回答正确！');
+                updateScore(1);
+                startGame(); // 重新生成新题目
+            } else {
+                alert(`回答错误，正确答案是：${correctResult}`);
+                updateScore(-1);
+                startGame(); // 重新生成新题目
+            }
+        }
+
+        function generateRandomX() {
+            randomX = getRandomNumber(-10, 10);
+            document.getElementById('randomX').innerHTML = `请计算 f'(${randomX}) 的值：`;
+        }
+    </script>
+</head>
+<body>
+    <h1>求导游戏</h1>
+    <p id="function"></p>
+    <div id="derivativeSection">
+        <label for="userDerivative">请输入该函数的导数（格式：ax+b）：</label>
+        <input type="text" id="userDerivative">
+        <button id="checkDerivativeButton" onclick="checkDerivative()">检查导数</button>
+    </div>
+    <p id="correctDerivative" style="display:none;"></p>
+    <div id="valueSection" style="display:none;">
+        <p id="randomX"></p>
+        <input type="number" id="userResult" placeholder="请输入 f'(x) 的值">
+        <button id="checkValueButton" onclick="checkValue()">检查答案</button>
+    </div>
+    <p id="score"></p>
+</body>
+</html>
